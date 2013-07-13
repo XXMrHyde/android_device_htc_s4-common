@@ -9,8 +9,15 @@ on init
     mkdir /devlog 0700 root root
 
 on fs
-    mkdir /tombstones 0771 system system
+    # mount all mmc partitions
+    mount_all /fstab.qcom
+
+    mkdir /data/tombstones 0771 system system
+    symlink /data/tombstones /tombstones
+    mkdir /tombstones/modem 0771 system system
     mkdir /tombstones/lpass 0771 system system
+    mkdir /tombstones/wcnss 0771 system system
+    mkdir /tombstones/dsps 0771 system system
 
 on post-fs-data
     # double check perms and set owner
@@ -98,6 +105,15 @@ on boot
 
     # symlink for HDMI
     symlink /dev/graphics/fb1 /dev/graphics/hdmi
+
+    # Remove write permissions to video related nodes
+    chmod 0664 /sys/devices/virtual/graphics/fb1/hpd
+    chmod 0664 /sys/devices/virtual/graphics/fb1/video_mode
+    chmod 0664 /sys/devices/virtual/graphics/fb1/format_3d
+
+    # Change owner and group for media server and surface flinger
+    chown system system /sys/devices/virtual/graphics/fb1/format_3d
+    chown system system /sys/devices/virtual/graphics/fb1/hpd
 
     # audio
     mkdir /data/audio 0775 media audio
